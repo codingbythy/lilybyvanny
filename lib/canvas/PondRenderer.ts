@@ -35,7 +35,7 @@ export class PondRenderer {
     this.setupCanvas();
 
     const colorScheme = getColorScheme(config.timeOfDay);
-    const { width, height } = this.canvas;
+    const { width, height } = this.getDisplayDimensions();
 
     // Initialize layers
     this.waterLayer = new WaterLayer(this.ctx, width, height, colorScheme);
@@ -66,11 +66,19 @@ export class PondRenderer {
   }
 
   /**
+   * Get display dimensions (not DPR-scaled)
+   */
+  private getDisplayDimensions(): { width: number; height: number } {
+    const rect = this.canvas.getBoundingClientRect();
+    return { width: rect.width, height: rect.height };
+  }
+
+  /**
    * Handle canvas resize
    */
   private handleResize() {
     this.setupCanvas();
-    const { width, height } = this.canvas;
+    const { width, height } = this.getDisplayDimensions();
     const colorScheme = getColorScheme(this.config.timeOfDay);
 
     this.waterLayer.resize(width, height);
@@ -107,8 +115,9 @@ export class PondRenderer {
     const deltaTime = currentTime - this.lastFrameTime;
     this.lastFrameTime = currentTime;
 
-    // Clear canvas
-    this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+    // Clear canvas (use display dimensions, not physical canvas size)
+    const { width, height } = this.getDisplayDimensions();
+    this.ctx.clearRect(0, 0, width, height);
 
     // Render layers in order
     this.waterLayer.render(deltaTime);
@@ -127,17 +136,13 @@ export class PondRenderer {
    * Handle click/tap interaction
    */
   handleClick(x: number, y: number) {
-    const rect = this.canvas.getBoundingClientRect();
-    const scaleX = this.canvas.width / (rect.width * (window.devicePixelRatio || 1));
-    const scaleY = this.canvas.height / (rect.height * (window.devicePixelRatio || 1));
-
-    const canvasX = x * scaleX;
-    const canvasY = y * scaleY;
+    // x and y are already in the correct coordinate space (CSS pixels)
+    // since we use display dimensions and the context is scaled by DPR
 
     // Check if clicked on a lily pad
-    const hitPad = this.padsLayer.handleClick(canvasX, canvasY);
+    const hitPad = this.padsLayer.handleClick(x, y);
 
     // Add ripple at click position
-    this.waterLayer.addRipple(canvasX, canvasY, hitPad ? 60 : 100);
+    this.waterLayer.addRipple(x, y, hitPad ? 60 : 100);
   }
 }
