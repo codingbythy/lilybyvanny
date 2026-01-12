@@ -58,11 +58,11 @@ export class WaterLayer {
   render(deltaTime: number) {
     this.time += deltaTime;
 
-    // Draw gradient background
+    // Draw gradient background - sky takes up less space (15% instead of 40%)
     const gradient = this.ctx.createLinearGradient(0, 0, 0, this.height);
     gradient.addColorStop(0, this.colorScheme.skyTop);
-    gradient.addColorStop(0.4, this.colorScheme.skyBottom);
-    gradient.addColorStop(0.4, this.colorScheme.waterTop);
+    gradient.addColorStop(0.15, this.colorScheme.skyBottom);
+    gradient.addColorStop(0.15, this.colorScheme.waterTop);
     gradient.addColorStop(1, this.colorScheme.waterBottom);
 
     this.ctx.fillStyle = gradient;
@@ -80,22 +80,22 @@ export class WaterLayer {
    */
   private drawAmbientWaves() {
     this.ctx.save();
-    this.ctx.globalAlpha = 0.1;
+    this.ctx.globalAlpha = 0.15;
 
-    for (let i = 0; i < 3; i++) {
+    for (let i = 0; i < 4; i++) {
       const offset = (this.time * 0.0003 + i * 100) % this.height;
 
       this.ctx.beginPath();
       for (let x = 0; x <= this.width; x += 10) {
-        const y = this.height * 0.4 + offset +
-                  Math.sin(x * 0.01 + this.time * 0.001 + i) * 15;
+        const y = this.height * 0.15 + offset +
+                  Math.sin(x * 0.01 + this.time * 0.001 + i) * 20;
         if (x === 0) {
           this.ctx.moveTo(x, y);
         } else {
           this.ctx.lineTo(x, y);
         }
       }
-      this.ctx.strokeStyle = 'rgba(255, 255, 255, 0.3)';
+      this.ctx.strokeStyle = 'rgba(255, 255, 255, 0.4)';
       this.ctx.lineWidth = 2;
       this.ctx.stroke();
     }
