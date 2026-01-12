@@ -14,6 +14,17 @@ export default function Home() {
   const [shareUrl, setShareUrl] = useState('');
   const [error, setError] = useState('');
 
+  // Get background colors based on time of day
+  const getBackgroundStyle = () => {
+    const backgrounds = {
+      dawn: 'linear-gradient(to bottom, #FFA07A, #FFE4B5)',
+      day: 'linear-gradient(to bottom, #87CEEB, #E0F6FF)',
+      dusk: 'linear-gradient(to bottom, #FF6B6B, #FFA500)',
+      night: 'linear-gradient(to bottom, #191970, #000033)',
+    };
+    return backgrounds[timeOfDay];
+  };
+
   const generateShareLink = async () => {
     setIsGenerating(true);
     setError('');
@@ -60,7 +71,7 @@ export default function Home() {
   };
 
   return (
-    <div className={styles.container}>
+    <div className={styles.container} style={{ background: getBackgroundStyle() }}>
       <main className={styles.main}>
         <h1 className={styles.title}>Lilypad Pond</h1>
         <p className={styles.description}>Make a tiny pond scene and share it.</p>

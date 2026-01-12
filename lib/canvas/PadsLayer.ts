@@ -43,7 +43,15 @@ export class PadsLayer {
     const waterTop = this.height * 0.15;
     const waterHeight = this.height * 0.85;
 
-    const flowerColors = ['#FFB6C1', '#FFC0CB', '#FFFFFF', '#FFF8DC', '#FFE4E1'];
+    // Softer, more natural watercolor flower colors like the bouquet
+    const flowerColors = [
+      '#FFB6C1', // Light pink
+      '#F8BBD0', // Soft rose
+      '#FADADD', // Pale pink
+      '#E6B8D7', // Dusty lavender
+      '#FFE0E9', // Blush
+      '#FFF0F5', // Lavender blush
+    ];
 
     for (let i = 0; i < count; i++) {
       const x = rng.nextFloat(0.1 * this.width, 0.9 * this.width);
@@ -219,56 +227,109 @@ export class PadsLayer {
   }
 
   /**
-   * Draw a beautiful lily flower
+   * Draw a beautiful watercolor-style lily flower (like the bouquet)
    */
   private drawLilyFlower(x: number, y: number, size: number, color: string) {
     this.ctx.save();
 
-    // Draw petals
-    for (let i = 0; i < 5; i++) {
-      const angle = (Math.PI * 2 * i) / 5 - Math.PI / 2;
-      const petalX = x + Math.cos(angle) * size * 0.3;
-      const petalY = y + Math.sin(angle) * size * 0.3;
+    // Draw petals with watercolor style - irregular and organic
+    const numPetals = 6;
+    for (let i = 0; i < numPetals; i++) {
+      const angle = (Math.PI * 2 * i) / numPetals - Math.PI / 2;
+      const petalLength = size * (0.8 + Math.sin(i) * 0.2); // Vary petal sizes
+      const petalX = x + Math.cos(angle) * size * 0.25;
+      const petalY = y + Math.sin(angle) * size * 0.25;
 
-      // Petal gradient
-      const petalGradient = this.ctx.createRadialGradient(petalX, petalY, 0, petalX, petalY, size);
-      petalGradient.addColorStop(0, color);
-      petalGradient.addColorStop(0.7, color);
-      petalGradient.addColorStop(1, 'rgba(0, 0, 0, 0.1)');
+      // Soft watercolor gradient for each petal
+      const petalGradient = this.ctx.createRadialGradient(
+        petalX,
+        petalY,
+        0,
+        petalX,
+        petalY,
+        petalLength
+      );
+
+      // Softer, more pastel colors
+      const lighterColor = this.lightenColor(color, 30);
+      petalGradient.addColorStop(0, lighterColor);
+      petalGradient.addColorStop(0.5, color);
+      petalGradient.addColorStop(0.8, color);
+      petalGradient.addColorStop(1, 'rgba(0, 0, 0, 0.05)');
 
       this.ctx.fillStyle = petalGradient;
+
+      // Draw petal with soft, organic shape
       this.ctx.beginPath();
-      this.ctx.ellipse(petalX, petalY, size * 0.9, size * 0.5, angle, 0, Math.PI * 2);
+      this.ctx.ellipse(
+        petalX,
+        petalY,
+        petalLength,
+        petalLength * 0.6,
+        angle,
+        0,
+        Math.PI * 2
+      );
       this.ctx.fill();
 
-      // Petal outline
-      this.ctx.strokeStyle = 'rgba(0, 0, 0, 0.1)';
-      this.ctx.lineWidth = 0.5;
+      // Soft petal outline for watercolor effect
+      this.ctx.strokeStyle = 'rgba(0, 0, 0, 0.08)';
+      this.ctx.lineWidth = 1;
       this.ctx.stroke();
     }
 
-    // Center of flower (yellow/orange)
-    const centerGradient = this.ctx.createRadialGradient(x, y, 0, x, y, size * 0.4);
-    centerGradient.addColorStop(0, '#FFD700');
-    centerGradient.addColorStop(0.5, '#FFA500');
-    centerGradient.addColorStop(1, '#FF8C00');
+    // Center of flower with warm yellow/gold
+    const centerSize = size * 0.35;
+    const centerGradient = this.ctx.createRadialGradient(x, y, 0, x, y, centerSize);
+    centerGradient.addColorStop(0, '#FFE97F');
+    centerGradient.addColorStop(0.4, '#FFD54F');
+    centerGradient.addColorStop(0.7, '#FFA000');
+    centerGradient.addColorStop(1, '#FF8F00');
 
     this.ctx.fillStyle = centerGradient;
     this.ctx.beginPath();
-    this.ctx.arc(x, y, size * 0.4, 0, Math.PI * 2);
+    this.ctx.arc(x, y, centerSize, 0, Math.PI * 2);
     this.ctx.fill();
 
-    // Center detail dots (stamens)
-    this.ctx.fillStyle = 'rgba(139, 69, 19, 0.6)';
-    for (let i = 0; i < 8; i++) {
-      const dotAngle = (Math.PI * 2 * i) / 8;
-      const dotX = x + Math.cos(dotAngle) * size * 0.2;
-      const dotY = y + Math.sin(dotAngle) * size * 0.2;
+    // Add texture to center with small dots (stamens)
+    this.ctx.fillStyle = 'rgba(139, 69, 19, 0.5)';
+    const stamenCount = 12;
+    for (let i = 0; i < stamenCount; i++) {
+      const stamenAngle = (Math.PI * 2 * i) / stamenCount + Math.sin(i) * 0.3;
+      const stamenDist = centerSize * (0.5 + Math.random() * 0.3);
+      const dotX = x + Math.cos(stamenAngle) * stamenDist;
+      const dotY = y + Math.sin(stamenAngle) * stamenDist;
+      const dotSize = size * (0.06 + Math.random() * 0.04);
+
       this.ctx.beginPath();
-      this.ctx.arc(dotX, dotY, size * 0.08, 0, Math.PI * 2);
+      this.ctx.arc(dotX, dotY, dotSize, 0, Math.PI * 2);
+      this.ctx.fill();
+    }
+
+    // Add subtle watercolor texture overlay
+    this.ctx.globalAlpha = 0.1;
+    for (let i = 0; i < 15; i++) {
+      const texX = x + (Math.random() - 0.5) * size * 1.5;
+      const texY = y + (Math.random() - 0.5) * size * 1.5;
+      const texSize = Math.random() * size * 0.15;
+
+      this.ctx.fillStyle = Math.random() > 0.5 ? 'rgba(255, 255, 255, 0.3)' : 'rgba(0, 0, 0, 0.1)';
+      this.ctx.beginPath();
+      this.ctx.arc(texX, texY, texSize, 0, Math.PI * 2);
       this.ctx.fill();
     }
 
     this.ctx.restore();
+  }
+
+  /**
+   * Lighten a hex color for watercolor effect
+   */
+  private lightenColor(color: string, amount: number): string {
+    const hex = color.replace('#', '');
+    const r = Math.min(255, parseInt(hex.substring(0, 2), 16) + amount);
+    const g = Math.min(255, parseInt(hex.substring(2, 4), 16) + amount);
+    const b = Math.min(255, parseInt(hex.substring(4, 6), 16) + amount);
+    return `rgb(${r}, ${g}, ${b})`;
   }
 }

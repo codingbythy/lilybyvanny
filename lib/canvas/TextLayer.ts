@@ -42,42 +42,39 @@ export class TextLayer {
 
     this.ctx.save();
 
-    // Calculate responsive font size - larger and more prominent
-    const baseFontSize = Math.min(this.width / 20, 32);
-    const fontSize = Math.max(18, baseFontSize);
+    // Calculate responsive font size - handwritten style
+    const baseFontSize = Math.min(this.width / 18, 36);
+    const fontSize = Math.max(20, baseFontSize);
 
-    this.ctx.font = `italic bold ${fontSize}px Georgia, serif`;
+    // Use handwritten font like in the bouquet
+    this.ctx.font = `${fontSize}px 'Patrick Hand', 'Caveat', cursive`;
     this.ctx.textAlign = 'center';
     this.ctx.textBaseline = 'bottom';
 
     // Position near bottom
-    const y = this.height - 40;
+    const y = this.height - 50;
 
-    // Draw background box for better readability
+    // Draw background box - cream/beige like the bouquet card
     const textMetrics = this.ctx.measureText(this.text);
-    const padding = 15;
+    const padding = 20;
     const boxWidth = textMetrics.width + padding * 2;
-    const boxHeight = fontSize + padding;
+    const boxHeight = fontSize + padding + 10;
     const boxX = this.width / 2 - boxWidth / 2;
     const boxY = y - boxHeight;
 
-    // Semi-transparent background with rounded corners
-    this.ctx.fillStyle = 'rgba(0, 0, 0, 0.4)';
-    this.roundRect(boxX, boxY, boxWidth, boxHeight, 10);
+    // Cream background with slight transparency
+    this.ctx.fillStyle = 'rgba(245, 240, 230, 0.95)';
+    this.roundRect(boxX, boxY, boxWidth, boxHeight, 4);
     this.ctx.fill();
 
-    // Add subtle border
-    this.ctx.strokeStyle = 'rgba(255, 255, 255, 0.3)';
-    this.ctx.lineWidth = 1;
+    // Add border like the bouquet card
+    this.ctx.strokeStyle = 'rgba(60, 60, 60, 0.8)';
+    this.ctx.lineWidth = 2;
     this.ctx.stroke();
 
-    // Draw text shadow for depth
-    this.ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
-    this.ctx.fillText(this.text, this.width / 2 + 2, y - 8 + 2);
-
-    // Draw main text with brighter color
-    this.ctx.fillStyle = '#FFFFFF';
-    this.ctx.fillText(this.text, this.width / 2, y - 8);
+    // Draw text in dark color (not pure black, more natural)
+    this.ctx.fillStyle = '#2c2c2c';
+    this.ctx.fillText(this.text, this.width / 2, y - 15);
 
     this.ctx.restore();
   }
