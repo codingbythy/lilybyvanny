@@ -103,83 +103,61 @@ export class FrogLayer {
   }
 
   /**
-   * Draw a single frog
+   * Draw a pixelated frog (8-bit style)
    */
   private drawFrog(x: number, y: number, size: number, eyeState: number) {
     this.ctx.save();
+    const pixelSize = 4;
 
-    // Body
+    // Snap to pixel grid
+    const gridX = Math.floor(x / pixelSize) * pixelSize;
+    const gridY = Math.floor(y / pixelSize) * pixelSize;
+    const gridSize = Math.floor(size / pixelSize);
+
+    // Body (simple oval shape with pixels)
     this.ctx.fillStyle = '#4A7C3B';
-    this.ctx.beginPath();
-    this.ctx.ellipse(x, y, size, size * 0.7, 0, 0, Math.PI * 2);
-    this.ctx.fill();
+    for (let px = -gridSize; px <= gridSize; px++) {
+      for (let py = -gridSize * 0.7; py <= gridSize * 0.7; py++) {
+        const dist = (px * px) / (gridSize * gridSize) + (py * py) / ((gridSize * 0.7) ** 2);
+        if (dist < 1) {
+          this.ctx.fillRect(gridX + px * pixelSize, gridY + py * pixelSize, pixelSize, pixelSize);
+        }
+      }
+    }
 
-    // Belly
+    // Belly (lighter green)
     this.ctx.fillStyle = '#A8D5A3';
-    this.ctx.beginPath();
-    this.ctx.ellipse(x, y + size * 0.2, size * 0.6, size * 0.4, 0, 0, Math.PI * 2);
-    this.ctx.fill();
+    const bellySize = gridSize * 0.6;
+    for (let px = -bellySize; px <= bellySize; px++) {
+      for (let py = 0; py <= bellySize; py++) {
+        const dist = (px * px) / (bellySize * bellySize) + (py * py) / (bellySize * bellySize);
+        if (dist < 1) {
+          this.ctx.fillRect(gridX + px * pixelSize, gridY + py * pixelSize + size * 0.2, pixelSize, pixelSize);
+        }
+      }
+    }
 
-    // Eyes
-    const eyeOffset = size * 0.4;
-    const eyeSize = size * 0.3;
+    // Eyes (simple squares)
+    const eyeOffset = gridSize * 0.4 * pixelSize;
+    const eyePixelSize = pixelSize * 2;
 
     // Left eye
     this.ctx.fillStyle = '#3F5C2F';
-    this.ctx.beginPath();
-    this.ctx.arc(x - eyeOffset, y - size * 0.3, eyeSize, 0, Math.PI * 2);
-    this.ctx.fill();
+    this.ctx.fillRect(gridX - eyeOffset - eyePixelSize, gridY - size * 0.3 - eyePixelSize / 2, eyePixelSize, eyePixelSize);
 
     // Right eye
-    this.ctx.beginPath();
-    this.ctx.arc(x + eyeOffset, y - size * 0.3, eyeSize, 0, Math.PI * 2);
-    this.ctx.fill();
+    this.ctx.fillRect(gridX + eyeOffset, gridY - size * 0.3 - eyePixelSize / 2, eyePixelSize, eyePixelSize);
 
-    // Pupils (adjust for blink)
+    // Pupils (if eyes open)
     if (eyeState < 0.5) {
-      const pupilAlpha = 1 - (eyeState * 2);
-      this.ctx.fillStyle = `rgba(0, 0, 0, ${pupilAlpha})`;
+      this.ctx.fillStyle = '#000000';
+      const pupilSize = pixelSize;
 
       // Left pupil
-      this.ctx.beginPath();
-      this.ctx.arc(x - eyeOffset, y - size * 0.3, eyeSize * 0.4, 0, Math.PI * 2);
-      this.ctx.fill();
+      this.ctx.fillRect(gridX - eyeOffset - pupilSize, gridY - size * 0.3 - pupilSize / 2, pupilSize, pupilSize);
 
       // Right pupil
-      this.ctx.beginPath();
-      this.ctx.arc(x + eyeOffset, y - size * 0.3, eyeSize * 0.4, 0, Math.PI * 2);
-      this.ctx.fill();
-    }
-
-    // Eyelids for blink
-    if (eyeState > 0) {
-      this.ctx.fillStyle = '#4A7C3B';
-
-      // Left eyelid
-      this.ctx.beginPath();
-      this.ctx.ellipse(
-        x - eyeOffset,
-        y - size * 0.3,
-        eyeSize,
-        eyeSize * (1 - eyeState),
-        0,
-        0,
-        Math.PI * 2
-      );
-      this.ctx.fill();
-
-      // Right eyelid
-      this.ctx.beginPath();
-      this.ctx.ellipse(
-        x + eyeOffset,
-        y - size * 0.3,
-        eyeSize,
-        eyeSize * (1 - eyeState),
-        0,
-        0,
-        Math.PI * 2
-      );
-      this.ctx.fill();
+      this.ctx.fillRect(gridX + eyeOffset + pupilSize / 2, gridY - size * 0.3 - pupilSize / 2, pupilSize, pupilSize);
     }
 
     this.ctx.restore();

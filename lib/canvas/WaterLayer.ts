@@ -53,60 +53,86 @@ export class WaterLayer {
   }
 
   /**
-   * Update and render the water layer
+   * Update and render the water layer (8-bit style)
    */
   render(deltaTime: number) {
     this.time += deltaTime;
 
-    // Draw gradient background - sky takes up less space (15% instead of 40%)
-    const gradient = this.ctx.createLinearGradient(0, 0, 0, this.height);
-    gradient.addColorStop(0, this.colorScheme.skyTop);
-    gradient.addColorStop(0.15, this.colorScheme.skyBottom);
-    gradient.addColorStop(0.15, this.colorScheme.waterTop);
-    gradient.addColorStop(1, this.colorScheme.waterBottom);
+    // 8-bit style: Flat colors with dithered transition
+    const skyHeight = this.height * 0.15;
 
-    this.ctx.fillStyle = gradient;
-    this.ctx.fillRect(0, 0, this.width, this.height);
+    // Sky - flat color
+    this.ctx.fillStyle = this.colorScheme.skyTop;
+    this.ctx.fillRect(0, 0, this.width, skyHeight);
 
-    // Draw ambient ripples (subtle wave effect)
-    this.drawAmbientWaves();
+    // Dithered transition between sky and water (8-bit effect)
+    this.drawDitheredTransition(skyHeight - 8, 16);
 
-    // Update and draw interactive ripples
+    // Water - flat color
+    this.ctx.fillStyle = this.colorScheme.waterTop;
+    this.ctx.fillRect(0, skyHeight, this.width, this.height - skyHeight);
+
+    // Draw pixelated ambient waves
+    this.drawPixelatedWaves();
+
+    // Update and draw pixelated ripples
     this.updateRipples();
   }
 
   /**
-   * Draw subtle ambient waves across the water surface
+   * Draw dithered transition for 8-bit effect
    */
-  private drawAmbientWaves() {
-    this.ctx.save();
-    this.ctx.globalAlpha = 0.15;
+  private drawDitheredTransition(startY: number, height: number) {
+    const pixelSize = 4; // 8-bit pixel size
 
-    for (let i = 0; i < 4; i++) {
-      const offset = (this.time * 0.0003 + i * 100) % this.height;
+    for (let y = 0; y < height; y += pixelSize) {
+      for (let x = 0; x < this.width; x += pixelSize) {
+        // Dither pattern based on position
+        const density = y / height; // 0 to 1
+        const ditherPattern = (x / pixelSize + y / pixelSize) % 2;
 
-      this.ctx.beginPath();
-      for (let x = 0; x <= this.width; x += 10) {
-        const y = this.height * 0.15 + offset +
-                  Math.sin(x * 0.01 + this.time * 0.001 + i) * 20;
-        if (x === 0) {
-          this.ctx.moveTo(x, y);
+        if (Math.random() > density - ditherPattern * 0.5) {
+          this.ctx.fillStyle = this.colorScheme.skyBottom;
         } else {
-          this.ctx.lineTo(x, y);
+          this.ctx.fillStyle = this.colorScheme.waterTop;
+        }
+
+        this.ctx.fillRect(x, startY + y, pixelSize, pixelSize);
+      }
+    }
+  }
+
+  /**
+   * Draw pixelated ambient waves (8-bit style)
+   */
+  private drawPixelatedWaves() {
+    this.ctx.save();
+    const pixelSize = 4;
+    const skyHeight = this.height * 0.15;
+
+    for (let i = 0; i < 3; i++) {
+      const offset = (this.time * 0.0005 + i * 50) % this.height;
+
+      for (let x = 0; x < this.width; x += pixelSize * 2) {
+        const waveY = skyHeight + offset + Math.sin(x * 0.02 + this.time * 0.001 + i) * 15;
+
+        // Draw blocky wave pixels
+        if (waveY > skyHeight && waveY < this.height) {
+          this.ctx.fillStyle = 'rgba(255, 255, 255, 0.2)';
+          this.ctx.fillRect(x, Math.floor(waveY / pixelSize) * pixelSize, pixelSize, pixelSize);
         }
       }
-      this.ctx.strokeStyle = 'rgba(255, 255, 255, 0.4)';
-      this.ctx.lineWidth = 2;
-      this.ctx.stroke();
     }
 
     this.ctx.restore();
   }
 
   /**
-   * Update and render interactive ripples
+   * Update and render pixelated ripples (8-bit style)
    */
   private updateRipples() {
+    const pixelSize = 4;
+
     this.ripples = this.ripples.filter(ripple => {
       ripple.radius += ripple.speed;
       ripple.alpha -= 0.01;
@@ -115,14 +141,25 @@ export class WaterLayer {
         return false;
       }
 
-      // Draw ripple
+      // Draw pixelated concentric square ripple (8-bit style)
       this.ctx.save();
       this.ctx.globalAlpha = ripple.alpha;
-      this.ctx.beginPath();
-      this.ctx.arc(ripple.x, ripple.y, ripple.radius, 0, Math.PI * 2);
-      this.ctx.strokeStyle = 'rgba(255, 255, 255, 0.8)';
-      this.ctx.lineWidth = 2;
-      this.ctx.stroke();
+
+      // Draw blocky circle using pixels
+      const angles = 32; // Number of points for blocky circle
+      for (let i = 0; i < angles; i++) {
+        const angle = (Math.PI * 2 * i) / angles;
+        const px = ripple.x + Math.cos(angle) * ripple.radius;
+        const py = ripple.y + Math.sin(angle) * ripple.radius;
+
+        // Snap to pixel grid
+        const gridX = Math.floor(px / pixelSize) * pixelSize;
+        const gridY = Math.floor(py / pixelSize) * pixelSize;
+
+        this.ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
+        this.ctx.fillRect(gridX, gridY, pixelSize, pixelSize);
+      }
+
       this.ctx.restore();
 
       return true;

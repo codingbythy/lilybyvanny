@@ -139,6 +139,9 @@ export class PondRenderer {
     // x and y are already in the correct coordinate space (CSS pixels)
     // since we use display dimensions and the context is scaled by DPR
 
+    // Make koi fish flee from click position
+    this.koiLayer.handleClick(x, y);
+
     // Check if clicked on a lily pad
     const hitPad = this.padsLayer.handleClick(x, y);
 

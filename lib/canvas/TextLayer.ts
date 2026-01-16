@@ -35,46 +35,53 @@ export class TextLayer {
   }
 
   /**
-   * Render dedication text
+   * Render dedication text (8-bit style)
    */
   render() {
     if (!this.text || this.text.trim().length === 0) return;
 
     this.ctx.save();
 
-    // Calculate responsive font size - handwritten style
-    const baseFontSize = Math.min(this.width / 18, 36);
-    const fontSize = Math.max(20, baseFontSize);
+    // Calculate responsive font size - pixel/retro style
+    const baseFontSize = Math.min(this.width / 20, 28);
+    const fontSize = Math.max(16, baseFontSize);
 
-    // Use handwritten font like in the bouquet
-    this.ctx.font = `${fontSize}px 'Patrick Hand', 'Caveat', cursive`;
+    // Use monospace font for 8-bit/retro look
+    this.ctx.font = `bold ${fontSize}px 'Courier New', 'Courier', monospace`;
     this.ctx.textAlign = 'center';
     this.ctx.textBaseline = 'bottom';
 
     // Position near bottom
     const y = this.height - 50;
 
-    // Draw background box - cream/beige like the bouquet card
+    // Draw pixelated background box (8-bit style)
     const textMetrics = this.ctx.measureText(this.text);
-    const padding = 20;
-    const boxWidth = textMetrics.width + padding * 2;
-    const boxHeight = fontSize + padding + 10;
-    const boxX = this.width / 2 - boxWidth / 2;
-    const boxY = y - boxHeight;
+    const padding = 16;
+    const pixelSize = 4;
 
-    // Cream background with slight transparency
-    this.ctx.fillStyle = 'rgba(245, 240, 230, 0.95)';
-    this.roundRect(boxX, boxY, boxWidth, boxHeight, 4);
-    this.ctx.fill();
+    const boxWidth = Math.ceil((textMetrics.width + padding * 2) / pixelSize) * pixelSize;
+    const boxHeight = Math.ceil((fontSize + padding + 8) / pixelSize) * pixelSize;
+    const boxX = Math.floor((this.width / 2 - boxWidth / 2) / pixelSize) * pixelSize;
+    const boxY = Math.floor((y - boxHeight) / pixelSize) * pixelSize;
 
-    // Add border like the bouquet card
-    this.ctx.strokeStyle = 'rgba(60, 60, 60, 0.8)';
-    this.ctx.lineWidth = 2;
-    this.ctx.stroke();
+    // Dark background (like old computer terminals)
+    this.ctx.fillStyle = 'rgba(20, 20, 40, 0.9)';
+    this.ctx.fillRect(boxX, boxY, boxWidth, boxHeight);
 
-    // Draw text in dark color (not pure black, more natural)
-    this.ctx.fillStyle = '#2c2c2c';
-    this.ctx.fillText(this.text, this.width / 2, y - 15);
+    // Pixelated border (8-bit style)
+    this.ctx.strokeStyle = 'rgba(200, 200, 255, 0.8)';
+    this.ctx.lineWidth = pixelSize;
+    this.ctx.strokeRect(boxX, boxY, boxWidth, boxHeight);
+
+    // Draw text in bright retro color (like old DOS text)
+    this.ctx.fillStyle = '#00FF00'; // Classic green terminal text
+    this.ctx.fillText(this.text, this.width / 2, y - 12);
+
+    // Add slight shadow/outline for readability (8-bit style)
+    this.ctx.fillStyle = '#003300';
+    this.ctx.fillText(this.text, this.width / 2 + 2, y - 10);
+    this.ctx.fillStyle = '#00FF00';
+    this.ctx.fillText(this.text, this.width / 2, y - 12);
 
     this.ctx.restore();
   }
