@@ -18,6 +18,7 @@ interface Koi {
 export class KoiLayer {
   private koi: Koi[] = [];
   private time: number = 0;
+  private readonly AVOIDANCE_DISTANCE = 80; // Distance at which koi start avoiding each other
 
   constructor(
     private ctx: CanvasRenderingContext2D,
@@ -32,11 +33,11 @@ export class KoiLayer {
   }
 
   /**
-   * Generate 1-3 koi with deterministic properties
+   * Generate 20 koi with deterministic properties
    */
   private generateKoi(seed: string) {
     const rng = new SeededRandom(seed + '_koi');
-    const count = rng.nextInt(2, 3);
+    const count = 20; // Fixed count of 20 koi
     this.koi = [];
 
     const colors = ['#FF6B35', '#FF8C42', '#FFA500', '#FFD700', '#FF4500', '#E63946'];
@@ -51,8 +52,8 @@ export class KoiLayer {
         x,
         y,
         angle: rng.nextFloat(0, Math.PI * 2),
-        speed: rng.nextFloat(0.4, 0.7),
-        length: rng.nextFloat(35, 55),
+        speed: rng.nextFloat(0.3, 0.6), // Slightly slower for more graceful movement
+        length: rng.nextFloat(25, 40), // Smaller size to avoid overcrowding
         color: colors[rng.nextInt(0, colors.length - 1)],
         targetAngle: rng.nextFloat(0, Math.PI * 2),
         turnSpeed: 0.02,
@@ -81,9 +82,41 @@ export class KoiLayer {
 
     this.time += deltaTime;
 
-    for (const fish of this.koi) {
+    for (let i = 0; i < this.koi.length; i++) {
+      const fish = this.koi[i];
+
       // Update swim phase
       fish.swimPhase += 0.1;
+
+      // Check for nearby fish and calculate avoidance
+      let avoidanceAngle: number | null = null;
+      let closestDistance = this.AVOIDANCE_DISTANCE;
+
+      for (let j = 0; j < this.koi.length; j++) {
+        if (i === j) continue; // Skip self
+
+        const other = this.koi[j];
+        const dx = fish.x - other.x;
+        const dy = fish.y - other.y;
+        const distance = Math.sqrt(dx * dx + dy * dy);
+
+        // If another fish is too close, calculate escape direction
+        if (distance < this.AVOIDANCE_DISTANCE && distance < closestDistance) {
+          closestDistance = distance;
+          // Angle pointing away from the other fish
+          avoidanceAngle = Math.atan2(dy, dx);
+        }
+      }
+
+      // If we need to avoid, set target angle to escape direction
+      if (avoidanceAngle !== null) {
+        fish.targetAngle = avoidanceAngle;
+      } else {
+        // Occasionally change direction when not avoiding
+        if (Math.random() < 0.01) {
+          fish.targetAngle = Math.random() * Math.PI * 2;
+        }
+      }
 
       // Gradually turn toward target angle
       let angleDiff = fish.targetAngle - fish.angle;
@@ -102,11 +135,6 @@ export class KoiLayer {
       if (fish.x < 0 || fish.x > this.width || fish.y < waterTop || fish.y > waterBottom) {
         fish.x = Math.max(0, Math.min(this.width, fish.x));
         fish.y = Math.max(waterTop, Math.min(waterBottom, fish.y));
-        fish.targetAngle = Math.random() * Math.PI * 2;
-      }
-
-      // Occasionally change direction
-      if (Math.random() < 0.01) {
         fish.targetAngle = Math.random() * Math.PI * 2;
       }
 
