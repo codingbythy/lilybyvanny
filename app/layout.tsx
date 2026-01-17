@@ -2,15 +2,15 @@ import type { Metadata, Viewport } from 'next';
 import './globals.css';
 
 export const metadata: Metadata = {
-  title: 'Lilypad Pond - Create and share your tiny pond',
-  description: 'Make a tiny pond scene and share it with friends. Customize lily pads, koi fish, frogs, and more.',
+  title: 'Send a Lily Pond - Create and share your pond',
+  description: 'Customize your lily pond with pads, koi fish, frogs, and a personal message. Share it with friends.',
 };
 
 export const viewport: Viewport = {
   width: 'device-width',
   initialScale: 1,
   maximumScale: 1,
-  themeColor: '#87CEEB',
+  themeColor: '#6B8E67',
 };
 
 export default function RootLayout({
@@ -23,7 +23,7 @@ export default function RootLayout({
       <head>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        <link href="https://fonts.googleapis.com/css2?family=Patrick+Hand&family=Caveat:wght@400;700&display=swap" rel="stylesheet" />
+        <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@400;700&family=Libre+Baskerville:wght@400;700&display=swap" rel="stylesheet" />
       </head>
       <body>{children}</body>
     </html>

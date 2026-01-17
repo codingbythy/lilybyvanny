@@ -1,157 +1,156 @@
 .container {
   min-height: 100vh;
-  padding: 0 1rem;
+  padding: 2rem 1rem;
   display: flex;
   flex-direction: column;
-  justify-content: center;
+  justify-content: flex-start;
   align-items: center;
-  transition: background 0.5s ease;
+  background: #F5F3EF;
 }
 
 .main {
   width: 100%;
-  max-width: 500px;
-  padding: 2rem 0;
+  max-width: 420px;
+  padding: 0;
+}
+
+.header {
+  text-align: center;
+  margin-bottom: 2rem;
 }
 
 .title {
   margin: 0;
-  font-size: 2.5rem;
-  font-weight: 700;
-  text-align: center;
-  color: #2c3e50;
+  font-family: 'Dancing Script', 'Brush Script MT', cursive;
+  font-size: 3.5rem;
+  font-weight: 400;
+  color: #6B8E67;
   margin-bottom: 0.5rem;
+  line-height: 1.2;
 }
 
-.description {
+.subtitle {
+  font-family: 'Libre Baskerville', Georgia, serif;
   text-align: center;
-  color: #546e7a;
-  font-size: 1.1rem;
-  margin-bottom: 2rem;
+  color: #6B8E67;
+  font-size: 1.25rem;
+  margin: 0;
+  font-weight: 300;
+  letter-spacing: 0.5px;
 }
 
 .editor {
-  background: white;
-  border-radius: 12px;
-  padding: 2rem;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  background: #6B8E67;
+  border-radius: 0;
+  padding: 2.5rem 2rem;
+  box-shadow: none;
 }
 
 .control {
-  margin-bottom: 1.5rem;
+  margin-bottom: 2rem;
 }
 
-.control label {
-  display: block;
-  margin-bottom: 0.5rem;
-  color: #2c3e50;
-  font-weight: 500;
-  font-size: 0.95rem;
+.controlHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
 }
 
-.slider {
-  width: 100%;
-  height: 8px;
-  border-radius: 5px;
-  background: #d3d3d3;
-  outline: none;
-  -webkit-appearance: none;
-  appearance: none;
+.controlLabel {
+  color: #F5F3EF;
+  font-size: 1.1rem;
+  font-weight: 400;
 }
 
-.slider::-webkit-slider-thumb {
-  -webkit-appearance: none;
-  appearance: none;
-  width: 20px;
-  height: 20px;
+.buttonGroup {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.adjustButton {
+  width: 32px;
+  height: 32px;
   border-radius: 50%;
-  background: #4CAF50;
+  background: #F5F3EF;
+  color: #6B8E67;
+  border: 2px solid #F5F3EF;
+  font-size: 1.2rem;
+  font-weight: bold;
   cursor: pointer;
-}
-
-.slider::-moz-range-thumb {
-  width: 20px;
-  height: 20px;
-  border-radius: 50%;
-  background: #4CAF50;
-  cursor: pointer;
-  border: none;
-}
-
-.select {
-  width: 100%;
-  padding: 0.75rem;
-  border: 2px solid #e0e0e0;
-  border-radius: 8px;
-  font-size: 1rem;
-  background: white;
-  cursor: pointer;
-  transition: border-color 0.2s;
-}
-
-.select:focus {
-  outline: none;
-  border-color: #4CAF50;
-}
-
-.checkbox {
   display: flex;
   align-items: center;
-  cursor: pointer;
-  user-select: none;
+  justify-content: center;
+  transition: all 0.2s;
+  padding: 0;
+  line-height: 1;
 }
 
-.checkbox input {
-  width: 20px;
-  height: 20px;
-  margin-right: 0.75rem;
-  cursor: pointer;
-  accent-color: #4CAF50;
+.adjustButton:hover:not(:disabled) {
+  background: #E5DDD5;
+  transform: scale(1.05);
 }
 
-.checkbox span {
-  font-size: 1rem;
+.adjustButton:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
 }
 
-.textInput {
+.previewRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  min-height: 60px;
+  align-items: center;
+}
+
+.previewItem {
+  width: 50px;
+  height: auto;
+  object-fit: contain;
+}
+
+.messageInput {
   width: 100%;
-  padding: 0.75rem;
-  border: 2px solid #e0e0e0;
-  border-radius: 8px;
+  padding: 0.875rem;
+  border: 2px solid #F5F3EF;
+  border-radius: 0;
   font-size: 1rem;
   font-family: inherit;
+  background: transparent;
+  color: #F5F3EF;
   transition: border-color 0.2s;
 }
 
-.textInput:focus {
-  outline: none;
-  border-color: #4CAF50;
+.messageInput::placeholder {
+  color: rgba(245, 243, 239, 0.6);
 }
 
-.charCount {
-  display: block;
-  text-align: right;
-  margin-top: 0.25rem;
-  color: #9e9e9e;
-  font-size: 0.85rem;
+.messageInput:focus {
+  outline: none;
+  border-color: #E5DDD5;
+  background: rgba(255, 255, 255, 0.05);
 }
 
 .generateButton {
   width: 100%;
   padding: 1rem;
-  background: #4CAF50;
-  color: white;
+  background: #F5F3EF;
+  color: #6B8E67;
   border: none;
-  border-radius: 8px;
-  font-size: 1.1rem;
-  font-weight: 600;
+  border-radius: 50px;
+  font-size: 1.15rem;
+  font-weight: 400;
   cursor: pointer;
-  transition: background 0.2s, transform 0.1s;
+  transition: all 0.2s;
+  margin-top: 1.5rem;
 }
 
 .generateButton:hover:not(:disabled) {
-  background: #45a049;
-  transform: translateY(-1px);
+  background: #E5DDD5;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
 .generateButton:active:not(:disabled) {
@@ -159,30 +158,32 @@
 }
 
 .generateButton:disabled {
-  background: #cccccc;
+  opacity: 0.6;
   cursor: not-allowed;
 }
 
 .error {
   margin-top: 1rem;
   padding: 0.75rem;
-  background: #ffebee;
-  color: #c62828;
+  background: rgba(255, 255, 255, 0.2);
+  color: #FFE5E5;
   border-radius: 6px;
   text-align: center;
+  border: 1px solid rgba(255, 255, 255, 0.3);
 }
 
 .shareBox {
   margin-top: 1.5rem;
   padding: 1.5rem;
-  background: #f5f5f5;
+  background: rgba(255, 255, 255, 0.15);
   border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
 .shareLabel {
   margin: 0 0 0.75rem 0;
   font-weight: 600;
-  color: #2c3e50;
+  color: #F5F3EF;
   text-align: center;
 }
 
@@ -195,17 +196,18 @@
 .shareUrl {
   flex: 1;
   padding: 0.75rem;
-  border: 2px solid #e0e0e0;
+  border: 1px solid rgba(245, 243, 239, 0.3);
   border-radius: 6px;
   font-size: 0.9rem;
   font-family: monospace;
-  background: white;
+  background: rgba(255, 255, 255, 0.9);
+  color: #6B8E67;
 }
 
 .copyButton {
   padding: 0.75rem 1.5rem;
-  background: #2196F3;
-  color: white;
+  background: #F5F3EF;
+  color: #6B8E67;
   border: none;
   border-radius: 6px;
   font-weight: 600;
@@ -215,50 +217,49 @@
 }
 
 .copyButton:hover {
-  background: #1976D2;
+  background: #E5DDD5;
 }
 
 .viewLink {
   display: block;
   text-align: center;
-  color: #4CAF50;
+  color: #F5F3EF;
   text-decoration: none;
   font-weight: 600;
   transition: color 0.2s;
 }
 
 .viewLink:hover {
-  color: #45a049;
+  color: #E5DDD5;
+  text-decoration: underline;
 }
 
 .footer {
   margin-top: 3rem;
   text-align: center;
-  color: #546e7a;
-  font-size: 0.9rem;
-}
-
-.footer a {
-  color: #2196F3;
-  text-decoration: none;
-  font-weight: 600;
-}
-
-.footer a:hover {
-  text-decoration: underline;
+  color: #6B8E67;
+  font-size: 0.95rem;
 }
 
 @media (max-width: 600px) {
   .container {
-    padding: 0 0.5rem;
+    padding: 1rem 0.5rem;
   }
 
   .title {
-    font-size: 2rem;
+    font-size: 2.75rem;
+  }
+
+  .subtitle {
+    font-size: 1.1rem;
   }
 
   .editor {
-    padding: 1.5rem;
+    padding: 2rem 1.5rem;
+  }
+
+  .previewItem {
+    width: 40px;
   }
 
   .shareUrlContainer {
