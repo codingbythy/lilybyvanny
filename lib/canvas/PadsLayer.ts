@@ -20,6 +20,8 @@ interface LilyPad {
 export class PadsLayer {
   private pads: LilyPad[] = [];
   private time: number = 0;
+  private lilypadImage: HTMLImageElement | null = null;
+  private imageLoaded: boolean = false;
 
   constructor(
     private ctx: CanvasRenderingContext2D,
@@ -30,6 +32,22 @@ export class PadsLayer {
     seed: string
   ) {
     this.generatePads(count, seed);
+    this.loadLilypadImage();
+  }
+
+  /**
+   * Load the lilypad image asset
+   */
+  private loadLilypadImage() {
+    this.lilypadImage = new Image();
+    this.lilypadImage.onload = () => {
+      this.imageLoaded = true;
+    };
+    this.lilypadImage.onerror = () => {
+      console.warn('Failed to load lilypad image, will use fallback rendering');
+      this.imageLoaded = false;
+    };
+    this.lilypadImage.src = '/images/lilypads/lilypad.png';
   }
 
   /**
@@ -136,21 +154,13 @@ export class PadsLayer {
 
       const y = pad.y + bobY + wobbleOffset;
 
-      // Draw pixelated shadow (8-bit style)
+      // Draw soft watercolor shadow
       this.ctx.save();
-      const pixelSize = 4;
-      const shadowRadius = pad.radius * 0.7;
       this.ctx.fillStyle = this.colorScheme.padShadow;
-
-      // Simple oval shadow with pixels
-      for (let sx = -shadowRadius; sx < shadowRadius; sx += pixelSize) {
-        for (let sy = -shadowRadius * 0.4; sy < shadowRadius * 0.4; sy += pixelSize) {
-          const dist = (sx * sx) / (shadowRadius * shadowRadius) + (sy * sy) / ((shadowRadius * 0.4) ** 2);
-          if (dist < 1) {
-            this.ctx.fillRect(pad.x + sx, y + 5 + sy, pixelSize, pixelSize);
-          }
-        }
-      }
+      this.ctx.globalAlpha = 0.3;
+      this.ctx.beginPath();
+      this.ctx.ellipse(pad.x, y + 8, pad.radius * 0.9, pad.radius * 0.35, 0, 0, Math.PI * 2);
+      this.ctx.fill();
       this.ctx.restore();
 
       // Draw lily pad
@@ -159,105 +169,99 @@ export class PadsLayer {
   }
 
   /**
-   * Draw a pixelated lily pad (8-bit style)
+   * Draw lily pad using image or fallback watercolor rendering
    */
   private drawLilyPad(x: number, y: number, radius: number, angle: number, hasFlower: boolean, flowerColor: string) {
     this.ctx.save();
-    const pixelSize = 4;
 
-    // Draw pixelated circle for lily pad
-    const angles = 24; // Blocky circle
-    const points: Array<{x: number, y: number}> = [];
+    if (this.imageLoaded && this.lilypadImage) {
+      // Use the actual lilypad image
+      const imageSize = radius * 2.2; // Scale image to fit
+      this.ctx.translate(x, y);
+      this.ctx.rotate(angle);
+      this.ctx.drawImage(
+        this.lilypadImage,
+        -imageSize / 2,
+        -imageSize / 2,
+        imageSize,
+        imageSize
+      );
+    } else {
+      // Fallback: watercolor-style lily pad
+      // Main pad with gradient
+      const gradient = this.ctx.createRadialGradient(x, y, 0, x, y, radius);
+      gradient.addColorStop(0, this.colorScheme.padColor);
+      gradient.addColorStop(0.7, this.colorScheme.padColor);
+      gradient.addColorStop(1, 'rgba(0, 0, 0, 0.2)');
 
-    for (let i = 0; i < angles; i++) {
-      const a = (Math.PI * 2 * i) / angles;
-      const px = x + Math.cos(a) * radius;
-      const py = y + Math.sin(a) * radius;
+      this.ctx.fillStyle = gradient;
+      this.ctx.beginPath();
+      this.ctx.arc(x, y, radius, 0, Math.PI * 2);
+      this.ctx.fill();
 
-      // Snap to pixel grid
-      points.push({
-        x: Math.floor(px / pixelSize) * pixelSize,
-        y: Math.floor(py / pixelSize) * pixelSize
-      });
-    }
+      // Add notch (V-cut)
+      this.ctx.fillStyle = this.colorScheme.waterTop;
+      this.ctx.beginPath();
+      this.ctx.moveTo(x, y);
+      this.ctx.arc(x, y, radius, angle, angle + Math.PI / 5);
+      this.ctx.closePath();
+      this.ctx.fill();
 
-    // Fill the pad with flat color
-    this.ctx.fillStyle = this.colorScheme.padColor;
-    this.ctx.beginPath();
-    this.ctx.moveTo(points[0].x, points[0].y);
-    for (let i = 1; i < points.length; i++) {
-      this.ctx.lineTo(points[i].x, points[i].y);
-    }
-    this.ctx.closePath();
-    this.ctx.fill();
+      // Soft outline
+      this.ctx.strokeStyle = 'rgba(0, 0, 0, 0.2)';
+      this.ctx.lineWidth = 2;
+      this.ctx.beginPath();
+      this.ctx.arc(x, y, radius - 1, 0, Math.PI * 2);
+      this.ctx.stroke();
 
-    // Add dark outline (8-bit style)
-    this.ctx.strokeStyle = 'rgba(0, 0, 0, 0.6)';
-    this.ctx.lineWidth = 2;
-    this.ctx.stroke();
-
-    // Add notch (V-cut) in pixelated style
-    this.ctx.fillStyle = this.colorScheme.waterTop;
-    this.ctx.beginPath();
-    const notchX = x + Math.cos(angle + Math.PI / 10) * radius * 0.7;
-    const notchY = y + Math.sin(angle + Math.PI / 10) * radius * 0.7;
-    this.ctx.moveTo(x, y);
-    this.ctx.lineTo(
-      Math.floor((x + Math.cos(angle) * radius) / pixelSize) * pixelSize,
-      Math.floor((y + Math.sin(angle) * radius) / pixelSize) * pixelSize
-    );
-    this.ctx.lineTo(
-      Math.floor(notchX / pixelSize) * pixelSize,
-      Math.floor(notchY / pixelSize) * pixelSize
-    );
-    this.ctx.closePath();
-    this.ctx.fill();
-    this.ctx.strokeStyle = 'rgba(0, 0, 0, 0.6)';
-    this.ctx.stroke();
-
-    // Draw pixel flower if present
-    if (hasFlower) {
-      this.drawPixelFlower(x + radius * 0.2, y - radius * 0.1, radius * 0.35, flowerColor);
+      // Draw watercolor flower if present
+      if (hasFlower) {
+        this.drawWatercolorFlower(x + radius * 0.2, y - radius * 0.1, radius * 0.35, flowerColor);
+      }
     }
 
     this.ctx.restore();
   }
 
   /**
-   * Draw a pixelated flower (8-bit style)
+   * Draw a soft watercolor flower
    */
-  private drawPixelFlower(x: number, y: number, size: number, color: string) {
+  private drawWatercolorFlower(x: number, y: number, size: number, color: string) {
     this.ctx.save();
-    const pixelSize = 4;
 
-    // Draw 4 simple petals in a cross pattern (8-bit style)
-    const petalOffsets = [
-      { dx: 0, dy: -1 },    // top
-      { dx: 1, dy: 0 },     // right
-      { dx: 0, dy: 1 },     // bottom
-      { dx: -1, dy: 0 }     // left
-    ];
+    // Draw 6 soft petals
+    const numPetals = 6;
+    for (let i = 0; i < numPetals; i++) {
+      const angle = (Math.PI * 2 * i) / numPetals - Math.PI / 2;
+      const petalLength = size * (0.9 + Math.sin(i) * 0.1);
+      const petalX = x + Math.cos(angle) * size * 0.3;
+      const petalY = y + Math.sin(angle) * size * 0.3;
 
-    this.ctx.fillStyle = color;
-    for (const offset of petalOffsets) {
-      const petalX = Math.floor((x + offset.dx * size * 0.6) / pixelSize) * pixelSize;
-      const petalY = Math.floor((y + offset.dy * size * 0.6) / pixelSize) * pixelSize;
+      // Soft gradient for petal
+      const petalGradient = this.ctx.createRadialGradient(
+        petalX, petalY, 0,
+        petalX, petalY, petalLength
+      );
+      petalGradient.addColorStop(0, this.lightenColor(color, 30));
+      petalGradient.addColorStop(0.6, color);
+      petalGradient.addColorStop(1, 'rgba(0, 0, 0, 0.05)');
 
-      // Draw blocky petal (3x2 pixel blocks)
-      this.ctx.fillRect(petalX - pixelSize, petalY - pixelSize, pixelSize * 2, pixelSize * 2);
+      this.ctx.fillStyle = petalGradient;
+      this.ctx.beginPath();
+      this.ctx.ellipse(petalX, petalY, petalLength, petalLength * 0.6, angle, 0, Math.PI * 2);
+      this.ctx.fill();
     }
 
-    // Draw center as yellow square
-    const centerX = Math.floor(x / pixelSize) * pixelSize;
-    const centerY = Math.floor(y / pixelSize) * pixelSize;
+    // Soft center
+    const centerGradient = this.ctx.createRadialGradient(x, y, 0, x, y, size * 0.3);
+    centerGradient.addColorStop(0, '#FFE97F');
+    centerGradient.addColorStop(0.5, '#FFD54F');
+    centerGradient.addColorStop(1, '#FFA000');
 
-    this.ctx.fillStyle = '#FFD700'; // Gold center
-    this.ctx.fillRect(centerX - pixelSize, centerY - pixelSize, pixelSize * 2, pixelSize * 2);
-
-    // Add black outline to center
-    this.ctx.strokeStyle = 'rgba(0, 0, 0, 0.6)';
-    this.ctx.lineWidth = 1;
-    this.ctx.strokeRect(centerX - pixelSize, centerY - pixelSize, pixelSize * 2, pixelSize * 2);
+    this.ctx.fillStyle = centerGradient;
+    this.ctx.beginPath();
+    this.ctx.arc(x, y, size * 0.3, 0, Math.PI * 2);
+    this.ctx.fill();
 
     this.ctx.restore();
   }

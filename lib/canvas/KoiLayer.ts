@@ -182,63 +182,103 @@ export class KoiLayer {
   }
 
   /**
-   * Draw a pixelated koi fish (8-bit style)
+   * Draw a smooth watercolor koi fish
    */
   private drawKoi(fish: Koi) {
     this.ctx.save();
     this.ctx.translate(fish.x, fish.y);
     this.ctx.rotate(fish.angle);
 
-    const pixelSize = 4;
-    const bodyLength = Math.floor(fish.length / pixelSize);
-    const bodyHeight = Math.floor((fish.length * 0.4) / pixelSize);
+    // Body wave for swimming motion
+    const tailWave = Math.sin(fish.swimPhase) * 0.3;
 
-    // Draw simple pixelated fish body (horizontal rectangle)
+    // Shadow (soft watercolor)
+    this.ctx.fillStyle = 'rgba(0, 0, 0, 0.2)';
+    this.ctx.beginPath();
+    this.ctx.ellipse(3, 6, fish.length * 0.5, fish.length * 0.22, 0, 0, Math.PI * 2);
+    this.ctx.fill();
+
+    // Body with gradient
+    const bodyGradient = this.ctx.createLinearGradient(
+      -fish.length * 0.5, -fish.length * 0.2,
+      fish.length * 0.5, fish.length * 0.2
+    );
+    bodyGradient.addColorStop(0, fish.color);
+    bodyGradient.addColorStop(0.5, fish.color);
+    bodyGradient.addColorStop(1, this.darkenColor(fish.color));
+
+    this.ctx.fillStyle = bodyGradient;
+    this.ctx.beginPath();
+    this.ctx.ellipse(0, 0, fish.length * 0.5, fish.length * 0.22, 0, 0, Math.PI * 2);
+    this.ctx.fill();
+
+    // Soft body outline
+    this.ctx.strokeStyle = 'rgba(0, 0, 0, 0.15)';
+    this.ctx.lineWidth = 1.5;
+    this.ctx.stroke();
+
+    // White belly patch
+    this.ctx.fillStyle = 'rgba(255, 255, 255, 0.4)';
+    this.ctx.beginPath();
+    this.ctx.ellipse(0, fish.length * 0.08, fish.length * 0.35, fish.length * 0.12, 0, 0, Math.PI * 2);
+    this.ctx.fill();
+
+    // Tail with gradient and wave
+    this.ctx.save();
+    this.ctx.translate(-fish.length * 0.5, 0);
+    this.ctx.rotate(tailWave);
+
+    const tailGradient = this.ctx.createLinearGradient(0, -fish.length * 0.2, -fish.length * 0.3, 0);
+    tailGradient.addColorStop(0, fish.color);
+    tailGradient.addColorStop(1, this.darkenColor(fish.color));
+
+    this.ctx.fillStyle = tailGradient;
+    this.ctx.beginPath();
+    this.ctx.moveTo(0, 0);
+    this.ctx.lineTo(-fish.length * 0.35, -fish.length * 0.25);
+    this.ctx.lineTo(-fish.length * 0.35, fish.length * 0.25);
+    this.ctx.closePath();
+    this.ctx.fill();
+
+    // Soft tail outline
+    this.ctx.strokeStyle = 'rgba(0, 0, 0, 0.15)';
+    this.ctx.lineWidth = 1.5;
+    this.ctx.stroke();
+    this.ctx.restore();
+
+    // Dorsal fin
     this.ctx.fillStyle = fish.color;
+    this.ctx.beginPath();
+    this.ctx.moveTo(fish.length * 0.1, -fish.length * 0.2);
+    this.ctx.lineTo(fish.length * 0.05, -fish.length * 0.35);
+    this.ctx.lineTo(fish.length * 0.15, -fish.length * 0.2);
+    this.ctx.closePath();
+    this.ctx.fill();
 
-    // Body pixels
-    for (let x = -bodyLength / 2; x < bodyLength / 2; x++) {
-      for (let y = -bodyHeight / 2; y < bodyHeight / 2; y++) {
-        // Create fish shape - narrower at ends
-        const distFromCenter = Math.abs(x) / (bodyLength / 2);
-        const maxY = (bodyHeight / 2) * (1 - distFromCenter * 0.6);
-
-        if (Math.abs(y) < maxY) {
-          this.ctx.fillRect(x * pixelSize, y * pixelSize, pixelSize, pixelSize);
-        }
-      }
-    }
-
-    // Tail (simple triangle in pixels)
-    const tailWave = Math.sin(fish.swimPhase) > 0 ? 1 : -1;
-    this.ctx.fillStyle = this.darkenColor(fish.color);
-
-    for (let i = 0; i < 3; i++) {
-      this.ctx.fillRect(
-        (-bodyLength / 2 - i - 1) * pixelSize,
-        tailWave * i * pixelSize,
-        pixelSize,
-        pixelSize
-      );
-      this.ctx.fillRect(
-        (-bodyLength / 2 - i - 1) * pixelSize,
-        -tailWave * i * pixelSize,
-        pixelSize,
-        pixelSize
-      );
-    }
-
-    // Eye (single white pixel with black outline)
+    // Eye (smooth and prominent)
     this.ctx.fillStyle = '#000000';
-    this.ctx.fillRect((bodyLength / 2 - 2) * pixelSize, -pixelSize, pixelSize, pixelSize);
+    this.ctx.beginPath();
+    this.ctx.arc(fish.length * 0.35, -fish.length * 0.08, 3, 0, Math.PI * 2);
+    this.ctx.fill();
 
-    this.ctx.fillStyle = '#FFFFFF';
-    this.ctx.fillRect((bodyLength / 2 - 2) * pixelSize + 1, -pixelSize + 1, pixelSize - 2, pixelSize - 2);
+    // Eye highlight
+    this.ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
+    this.ctx.beginPath();
+    this.ctx.arc(fish.length * 0.36, -fish.length * 0.09, 1.2, 0, Math.PI * 2);
+    this.ctx.fill();
 
-    // Simple dorsal fin (few pixels sticking up)
-    this.ctx.fillStyle = fish.color;
-    this.ctx.fillRect(pixelSize, -bodyHeight / 2 * pixelSize - pixelSize, pixelSize, pixelSize);
-    this.ctx.fillRect(0, -bodyHeight / 2 * pixelSize - pixelSize * 2, pixelSize, pixelSize);
+    // Soft highlight on body
+    const highlightGradient = this.ctx.createRadialGradient(
+      fish.length * 0.1, -fish.length * 0.12, 0,
+      fish.length * 0.1, -fish.length * 0.12, fish.length * 0.3
+    );
+    highlightGradient.addColorStop(0, 'rgba(255, 255, 255, 0.3)');
+    highlightGradient.addColorStop(1, 'rgba(255, 255, 255, 0)');
+
+    this.ctx.fillStyle = highlightGradient;
+    this.ctx.beginPath();
+    this.ctx.ellipse(fish.length * 0.1, -fish.length * 0.12, fish.length * 0.25, fish.length * 0.12, 0, 0, Math.PI * 2);
+    this.ctx.fill();
 
     this.ctx.restore();
   }
